@@ -1,16 +1,15 @@
 package com.hustlestar.spark.view
 
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
-object CsvCheck {
-  def main(args: Array[String]): Unit = {
-    val sparkSession = SparkUtils.createSparkSession("localhost", "hello-world")
+trait CsvCheck {
+  def readCsv(sparkSession: SparkSession, filePath: String): DataFrame = {
     val dataFrame: DataFrame = sparkSession.read
       .format("csv")
       .option("header", "true")
       .option("inferSchema", "true")
-      .load("D:\\Projects\\spark_data_check\\src\\main\\scala\\resources\\993\\SAMPLE_biweekly_control_group_delivers20170102.csv")
-    dataFrame.printSchema()
+      .load(filePath)
+    dataFrame
   }
 }
 
