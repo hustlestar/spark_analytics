@@ -1,10 +1,10 @@
 package com.hustlestar.spark.view._993
 
-import com.hustlestar.spark.view.{Helper, SparkUtils}
+import com.hustlestar.spark.view.{ReadWriteHelper, SparkUtils}
 import org.apache.spark.sql.DataFrame
 
 
-object BiweeklyCGCGHalts extends Helper with BiweeklyCGLogic {
+object BiweeklyCGCGHalts extends ReadWriteHelper with BiweeklyCGLogic {
 
   def main(args: Array[String]): Unit = {
     val sparkSession = SparkUtils.createSparkSession("biweekly_control_group_halts")

@@ -7,3 +7,5 @@
 /spark-warehouse/
 /.idea/
 /target/
+/src/main/scala/com/hustlestar/spark/view/_join/JoinBasedIncremental.scala
+/src/main/scala/resources/

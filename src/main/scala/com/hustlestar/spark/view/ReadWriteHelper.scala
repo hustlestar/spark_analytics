@@ -2,7 +2,7 @@ package com.hustlestar.spark.view
 
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-trait Helper {
+trait ReadWriteHelper {
   def readCsv(sparkSession: SparkSession, filePath: String): DataFrame = {
     val dataFrame: DataFrame = sparkSession.read
       .format("csv")
