@@ -5,7 +5,7 @@ import java.nio.file.{Files, Paths}
 import com.hustlestar.spark.view.{DataFrameHelper, ReadWriteHelper, SparkUtils}
 import org.apache.spark.sql.expressions.{UserDefinedFunction, Window, WindowSpec}
 import org.apache.spark.sql.types.IntegerType
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 
 object GlobalCommodityTrades {
   val inputPath = "D:\\Projects\\spark_data_check\\src\\main\\scala\\resources\\global_commodity_trade_stats\\global-commodity-trade-statistics\\commodity_trade_statistics_data.csv"
@@ -126,6 +126,21 @@ object GlobalCommodityTrades {
       .orderBy($"country_or_area".asc)
   }
 
+  def saldoDynamicsForCountryYearly(df: DataFrame, country: String): Dataset[Row] = {
+    val countryYearSpec: WindowSpec = Window.partitionBy($"country_or_area", $"year").orderBy($"flow", $"year")
+    df
+      .filter($"country_or_area" === country)
+      .filter($"flow" === "Import" || $"flow" === "Export")
+      .groupBy($"country_or_area", $"flow", $"year")
+      .agg(sum($"trade_usd").as("export_total"))
+      .withColumn("import_total", lag("export_total", -1).over(countryYearSpec))
+      .withColumn("saldo", $"export_total" - $"import_total")
+      .filter($"saldo".isNotNull)
+      .drop("flow")
+      .withColumn("saldo_str", convertLongToUsd($"saldo"))
+      .orderBy($"year".asc)
+  }
+
   def main(args: Array[String]): Unit = {
     val parquetFileLocation = outputRootDirPath + "parquet"
     // this dataset could be found at https://www.kaggle.com
@@ -151,14 +166,26 @@ object GlobalCommodityTrades {
     val biggestImportersExporters = countriesWhichImportExportRatingDesc(cleanedDF)
     //biggestImportersExporters.show(50)
     val importersRatingSince2010 = countriesTotalImportSince2010RatingDesc(cleanedDF)
-    DF_HELPER.debugDataFrame(importersRatingSince2010)
+    //DF_HELPER.debugDataFrame(importersRatingSince2010)
     val exportersRatingSince2010 = countriesTotalExportSince2010RatingDesc(cleanedDF)
-    DF_HELPER.debugDataFrame(exportersRatingSince2010)
+    //DF_HELPER.debugDataFrame(exportersRatingSince2010)
 
     val saldoSince2010 = importExportSaldoSince2010(exportersRatingSince2010, importersRatingSince2010)
     //DF_HELPER.debugDataFrame(saldoSince2010)
-    saldoSince2010.cache()
-    saldoSince2010.show(200)
-    saldoSince2010.orderBy($"saldo".desc).show(200)
+    //saldoSince2010.cache()
+    //saldoSince2010.show(200)
+    //saldoSince2010.orderBy($"saldo".desc).show(200)
+
+    val belarusSaldoDynamics = saldoDynamicsForCountryYearly(cleanedDF, "Belarus")
+    val usaSaldoDynamics = saldoDynamicsForCountryYearly(cleanedDF, "China")
+    usaSaldoDynamics.show(30)
+    val chinaSaldoDynamics = saldoDynamicsForCountryYearly(cleanedDF, "USA")
+    chinaSaldoDynamics.show(30)
+    val germanySaldoDynamics = saldoDynamicsForCountryYearly(cleanedDF, "Germany")
+    germanySaldoDynamics.show(30)
+    val russiaSaldoDynamics = saldoDynamicsForCountryYearly(cleanedDF, "Russian Federation")
+    russiaSaldoDynamics.show(30)
+    //DF_HELPER.debugDataFrame(belarusSaldoDynamics)
+    //belarusSaldoDynamics.show(50)
   }
 }
