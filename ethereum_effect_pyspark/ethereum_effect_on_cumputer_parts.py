@@ -14,6 +14,7 @@ def _read_input_csv(input_dir):
     :param input_dir: dir with input csv files
     :return: initial file name, generate DataFrame
     """
+    input_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), input_dir)
     filtered_input_files = (os.path.join(input_dir, f) for f in os.listdir(input_dir) if f.endswith(".csv"))
     for f in filtered_input_files:
         print(f)
@@ -29,7 +30,7 @@ def read_input_parquet(input_dir):
     :param input_dir:
     :return: dict with name of DataFrame as key and df itself as value
     """
-    parquet_dir = os.path.join(input_dir, "parquet")
+    parquet_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), input_dir, "parquet")
     if os.path.exists(parquet_dir):
         dict_of_df = {d: spark.read.parquet(os.path.join(parquet_dir, d)) for d in os.listdir(parquet_dir)}
     else:
@@ -40,7 +41,14 @@ def read_input_parquet(input_dir):
     return dict_of_df
 
 
+def debug_df(df):
+    df.printSchema()
+    df.show()
+
+
 if __name__ == '__main__':
     input_dir = "ethereum-effect-pc-parts"
-    print(read_input_parquet(input_dir))
-
+    df_dict = read_input_parquet(input_dir)
+    for name, df in df_dict.iteritems():
+        print("Some basic info about {}".format(name))
+        debug_df(df)
