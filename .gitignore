@@ -9,3 +9,5 @@
 /target/
 /src/main/scala/com/hustlestar/spark/view/_join/JoinBasedIncremental.scala
 /src/main/scala/resources/
+/ethereum_effect_pyspark/ethereum-effect-pc-parts/parquet/
+/ethereum_pyspark/

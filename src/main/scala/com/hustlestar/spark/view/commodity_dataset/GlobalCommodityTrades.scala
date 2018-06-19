@@ -143,7 +143,7 @@ object GlobalCommodityTrades {
 
   def main(args: Array[String]): Unit = {
     val parquetFileLocation = outputRootDirPath + "parquet"
-    // this dataset could be found at https://www.kaggle.com
+    // this dataset could be found at https://www.kaggle.com/
     val df: DataFrame = if (!Files.exists(Paths.get(parquetFileLocation))) {
       val initialDF = IO_HELPER.readCsv(spark, inputPath)
       IO_HELPER.saveAsParquet(initialDF, outputRootDirPath + "parquet")
