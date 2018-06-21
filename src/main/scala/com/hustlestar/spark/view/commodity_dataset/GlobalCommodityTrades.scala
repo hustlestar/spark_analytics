@@ -22,7 +22,6 @@ object GlobalCommodityTrades {
     df
       .filter(!$"country_or_area".rlike("[0-9]"))
       .filter($"flow".isNotNull)
-      .select($"*")
   }
 
   val convertLongToUsd: UserDefinedFunction = udf(
@@ -36,7 +35,6 @@ object GlobalCommodityTrades {
   def biggestTradeInUsdForCountryFlowEver2(df: DataFrame): DataFrame = {
     val windowSpec: WindowSpec = Window.partitionBy($"country_or_area", $"flow").orderBy($"country_or_area", $"flow")
     df
-      .select($"*")
       .filter($"comm_code" =!= "TOTAL")
       .withColumn("biggest_trade", max($"trade_usd").over(windowSpec))
       .filter($"biggest_trade" === $"trade_usd")
@@ -155,26 +153,26 @@ object GlobalCommodityTrades {
     cleanedDF.cache()
     DF_HELPER.debugDataFrame(cleanedDF)
     val biggestTrade2 = biggestTradeInUsdForCountryFlowEver2(cleanedDF)
-    //DF_HELPER.debugDataFrame(biggestTrade2)
+    DF_HELPER.debugDataFrame(biggestTrade2)
     val mostTradedCommodityRating = mostTradedCommoditiesListDesc(cleanedDF)
-    //DF_HELPER.debugDataFrame(mostTradedCommodityRating)
+    DF_HELPER.debugDataFrame(mostTradedCommodityRating)
     val mostTradedCategoryRating = mostTradedCategoriesListDesc(cleanedDF)
-    //DF_HELPER.debugDataFrame(mostTradedCategoryRating)
+    DF_HELPER.debugDataFrame(mostTradedCategoryRating)
     val mostTradedGoodInCategoryRating = mostTradedCommodityOverCategoryListDesc(cleanedDF)
-    //mostTradedCommodityOverCategoryListDesc(cleanedDF).show(50)
-    //DF_HELPER.debugDataFrame(mostTradedGoodInCategoryRating)
+    mostTradedCommodityOverCategoryListDesc(cleanedDF).show(50)
+    DF_HELPER.debugDataFrame(mostTradedGoodInCategoryRating)
     val biggestImportersExporters = countriesWhichImportExportRatingDesc(cleanedDF)
-    //biggestImportersExporters.show(50)
+    biggestImportersExporters.show(50)
     val importersRatingSince2010 = countriesTotalImportSince2010RatingDesc(cleanedDF)
-    //DF_HELPER.debugDataFrame(importersRatingSince2010)
+    DF_HELPER.debugDataFrame(importersRatingSince2010)
     val exportersRatingSince2010 = countriesTotalExportSince2010RatingDesc(cleanedDF)
-    //DF_HELPER.debugDataFrame(exportersRatingSince2010)
+    DF_HELPER.debugDataFrame(exportersRatingSince2010)
 
     val saldoSince2010 = importExportSaldoSince2010(exportersRatingSince2010, importersRatingSince2010)
-    //DF_HELPER.debugDataFrame(saldoSince2010)
-    //saldoSince2010.cache()
-    //saldoSince2010.show(200)
-    //saldoSince2010.orderBy($"saldo".desc).show(200)
+    DF_HELPER.debugDataFrame(saldoSince2010)
+    saldoSince2010.cache()
+    saldoSince2010.show(200)
+    saldoSince2010.orderBy($"saldo".desc).show(200)
 
     val belarusSaldoDynamics = saldoDynamicsForCountryYearly(cleanedDF, "Belarus")
     val usaSaldoDynamics = saldoDynamicsForCountryYearly(cleanedDF, "China")
@@ -185,7 +183,7 @@ object GlobalCommodityTrades {
     germanySaldoDynamics.show(30)
     val russiaSaldoDynamics = saldoDynamicsForCountryYearly(cleanedDF, "Russian Federation")
     russiaSaldoDynamics.show(30)
-    //DF_HELPER.debugDataFrame(belarusSaldoDynamics)
-    //belarusSaldoDynamics.show(50)
+    DF_HELPER.debugDataFrame(belarusSaldoDynamics)
+    belarusSaldoDynamics.show(50)
   }
 }
