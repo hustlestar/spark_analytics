@@ -2,7 +2,7 @@ package com.hustlestar.spark.view
 
 import org.apache.spark.sql.{Column, DataFrame}
 
-trait DataFrameHelper {
+object DataFrameHelper {
   def debugDataFrame(df: DataFrame): Unit = {
     df.printSchema()
     df.explain()

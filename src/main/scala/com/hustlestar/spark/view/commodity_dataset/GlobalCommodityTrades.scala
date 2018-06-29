@@ -1,7 +1,5 @@
 package com.hustlestar.spark.view.commodity_dataset
 
-import java.nio.file.{Files, Paths}
-
 import com.hustlestar.spark.view.{DataFrameHelper, ReadWriteHelper, SparkUtils}
 import org.apache.spark.sql.expressions.{UserDefinedFunction, Window, WindowSpec}
 import org.apache.spark.sql.types.IntegerType
@@ -11,12 +9,10 @@ object GlobalCommodityTrades {
   val inputPath = "D:\\Projects\\spark_data_check\\src\\main\\scala\\resources\\global_commodity_trade_stats\\global-commodity-trade-statistics\\commodity_trade_statistics_data.csv"
   val outputRootDirPath = "D:\\Projects\\spark_data_check\\src\\main\\scala\\resources\\global_commodity_trade_stats\\"
 
-  val IO_HELPER = new Object() with ReadWriteHelper
-  val DF_HELPER = new Object() with DataFrameHelper
-  val spark: SparkSession = SparkUtils.createSparkSession("Explore commodity trades")
+  val spark: SparkSession = SparkUtils.getOrCreateSparkSession("Explore commodity trades")
 
-  import spark.implicits._
   import org.apache.spark.sql.functions._
+  import spark.implicits._
 
   def cleanInitialDF(df: DataFrame): DataFrame = {
     df
@@ -140,36 +136,28 @@ object GlobalCommodityTrades {
   }
 
   def main(args: Array[String]): Unit = {
-    val parquetFileLocation = outputRootDirPath + "parquet"
-    // this dataset could be found at https://www.kaggle.com/
-    val df: DataFrame = if (!Files.exists(Paths.get(parquetFileLocation))) {
-      val initialDF = IO_HELPER.readCsv(spark, inputPath)
-      IO_HELPER.saveAsParquet(initialDF, outputRootDirPath + "parquet")
-      initialDF
-    } else {
-      spark.read.parquet(parquetFileLocation)
-    }
+    val df: DataFrame = ReadWriteHelper.readCsvAndSaveAsParquet(spark, inputPath, outputRootDirPath)
     val cleanedDF = cleanInitialDF(df)
     cleanedDF.cache()
-    DF_HELPER.debugDataFrame(cleanedDF)
+    DataFrameHelper.debugDataFrame(cleanedDF)
     val biggestTrade2 = biggestTradeInUsdForCountryFlowEver2(cleanedDF)
-    DF_HELPER.debugDataFrame(biggestTrade2)
+    DataFrameHelper.debugDataFrame(biggestTrade2)
     val mostTradedCommodityRating = mostTradedCommoditiesListDesc(cleanedDF)
-    DF_HELPER.debugDataFrame(mostTradedCommodityRating)
+    DataFrameHelper.debugDataFrame(mostTradedCommodityRating)
     val mostTradedCategoryRating = mostTradedCategoriesListDesc(cleanedDF)
-    DF_HELPER.debugDataFrame(mostTradedCategoryRating)
+    DataFrameHelper.debugDataFrame(mostTradedCategoryRating)
     val mostTradedGoodInCategoryRating = mostTradedCommodityOverCategoryListDesc(cleanedDF)
     mostTradedCommodityOverCategoryListDesc(cleanedDF).show(50)
-    DF_HELPER.debugDataFrame(mostTradedGoodInCategoryRating)
+    DataFrameHelper.debugDataFrame(mostTradedGoodInCategoryRating)
     val biggestImportersExporters = countriesWhichImportExportRatingDesc(cleanedDF)
     biggestImportersExporters.show(50)
     val importersRatingSince2010 = countriesTotalImportSince2010RatingDesc(cleanedDF)
-    DF_HELPER.debugDataFrame(importersRatingSince2010)
+    DataFrameHelper.debugDataFrame(importersRatingSince2010)
     val exportersRatingSince2010 = countriesTotalExportSince2010RatingDesc(cleanedDF)
-    DF_HELPER.debugDataFrame(exportersRatingSince2010)
+    DataFrameHelper.debugDataFrame(exportersRatingSince2010)
 
     val saldoSince2010 = importExportSaldoSince2010(exportersRatingSince2010, importersRatingSince2010)
-    DF_HELPER.debugDataFrame(saldoSince2010)
+    DataFrameHelper.debugDataFrame(saldoSince2010)
     saldoSince2010.cache()
     saldoSince2010.show(200)
     saldoSince2010.orderBy($"saldo".desc).show(200)
@@ -183,7 +171,7 @@ object GlobalCommodityTrades {
     germanySaldoDynamics.show(30)
     val russiaSaldoDynamics = saldoDynamicsForCountryYearly(cleanedDF, "Russian Federation")
     russiaSaldoDynamics.show(30)
-    DF_HELPER.debugDataFrame(belarusSaldoDynamics)
+    DataFrameHelper.debugDataFrame(belarusSaldoDynamics)
     belarusSaldoDynamics.show(50)
   }
 }
