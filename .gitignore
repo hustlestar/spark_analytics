@@ -11,3 +11,4 @@
 /src/main/scala/resources/
 /ethereum_effect_pyspark/ethereum-effect-pc-parts/parquet/
 /ethereum_pyspark/
+*venv*

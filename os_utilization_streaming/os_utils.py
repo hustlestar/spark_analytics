@@ -37,5 +37,6 @@ def clean_old_logs(dir_path="input", file_name="sys_log", ext="csv"):
         os.remove(os.path.join(dir_path, g))
 
 
-log_system_status()
-clean_old_logs()
+if __name__ == '__main__':
+    log_system_status()
+    clean_old_logs()
